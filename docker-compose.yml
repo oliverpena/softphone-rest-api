@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py wait_for_db &&
+       python manage.py migrate &&
+       python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=database
+      - DB_NAME=devdb
+      - DB_USER=dbuser
+      - DB_PASS=changeme
+    depends_on:
+      - database
+  database:
+    image: postgres:13-alpine
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=changeme
+    ports:
+      - "5432:5432"
+volumes:
+  dev-db-data:
